@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
-using UnityEngine.InputSystem;  // New Input System
+using UnityEngine.InputSystem; // New Input System
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 public class PlaceOnPlane : MonoBehaviour
 {
@@ -24,7 +25,6 @@ public class PlaceOnPlane : MonoBehaviour
         if (uiCanvas != null)
             uiCanvas.SetActive(false);
 
-        // Use main camera if not assigned
         if (arCamera == null)
             arCamera = Camera.main;
     }
@@ -33,20 +33,23 @@ public class PlaceOnPlane : MonoBehaviour
     {
         Vector2 screenPosition;
 
-        // Determine input type: mouse click or touch
 #if UNITY_EDITOR
-        // Simulate AR interaction with mouse in Editor
         if (!Mouse.current.leftButton.wasPressedThisFrame) return;
+
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+
         screenPosition = Mouse.current.position.ReadValue();
 #else
         if (Touchscreen.current == null || Touchscreen.current.touches.Count == 0) return;
 
         var touch = Touchscreen.current.touches[0];
         if (!touch.press.wasPressedThisFrame) return;
+
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(touch.touchId.ReadValue())) return;
+
         screenPosition = touch.position.ReadValue();
 #endif
 
-        // Perform raycast against detected planes
         if (raycastManager.Raycast(screenPosition, hits, TrackableType.PlaneWithinPolygon))
         {
             Pose hitPose = hits[0].pose;
@@ -54,6 +57,14 @@ public class PlaceOnPlane : MonoBehaviour
             if (spawnedObject == null)
             {
                 spawnedObject = Instantiate(placedPrefab, hitPose.position, hitPose.rotation);
+                spawnedObject.SetActive(true); // Reveal the object on placement
+
+                // Optional: If prefab is active but its renderers are disabled, use this instead
+                // foreach (var renderer in spawnedObject.GetComponentsInChildren<Renderer>())
+                // {
+                //     renderer.enabled = true;
+                // }
+
                 if (uiCanvas != null) uiCanvas.SetActive(true);
                 animator = spawnedObject.GetComponent<Animator>();
             }
