@@ -7,7 +7,27 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: "A\xE7o"
+      name: Plastico R
+    second: {fileID: 2100000, guid: 665b31852e83b64439a96019cfe66577, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plastico Ranhuras
+    second: {fileID: 2100000, guid: 665b31852e83b64439a96019cfe66577, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plastico Ranhuras.001
+    second: {fileID: 2100000, guid: 665b31852e83b64439a96019cfe66577, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plastico Ranhuras.003
+    second: {fileID: 2100000, guid: 665b31852e83b64439a96019cfe66577, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plastico T
     second: {fileID: 2100000, guid: 665b31852e83b64439a96019cfe66577, type: 2}
   - first:
       type: UnityEngine:Material
