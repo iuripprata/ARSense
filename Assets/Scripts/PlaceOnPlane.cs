@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
-using UnityEngine.InputSystem; // New Input System
-using System.Collections.Generic;
+using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class PlaceOnPlane : MonoBehaviour
 {
@@ -22,11 +22,18 @@ public class PlaceOnPlane : MonoBehaviour
     void Awake()
     {
         raycastManager = GetComponent<ARRaycastManager>();
+
         if (uiCanvas != null)
             uiCanvas.SetActive(false);
 
         if (arCamera == null)
             arCamera = Camera.main;
+
+        Debug.Log("Available animation names:");
+        foreach (var name in animationNames)
+        {
+            Debug.Log(name);
+        }
     }
 
     void Update()
@@ -35,9 +42,7 @@ public class PlaceOnPlane : MonoBehaviour
 
 #if UNITY_EDITOR
         if (!Mouse.current.leftButton.wasPressedThisFrame) return;
-
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
-
         screenPosition = Mouse.current.position.ReadValue();
 #else
         if (Touchscreen.current == null || Touchscreen.current.touches.Count == 0) return;
@@ -57,16 +62,19 @@ public class PlaceOnPlane : MonoBehaviour
             if (spawnedObject == null)
             {
                 spawnedObject = Instantiate(placedPrefab, hitPose.position, hitPose.rotation);
-                spawnedObject.SetActive(true); // Reveal the object on placement
-
-                // Optional: If prefab is active but its renderers are disabled, use this instead
-                // foreach (var renderer in spawnedObject.GetComponentsInChildren<Renderer>())
-                // {
-                //     renderer.enabled = true;
-                // }
+                spawnedObject.SetActive(true);
 
                 if (uiCanvas != null) uiCanvas.SetActive(true);
+
                 animator = spawnedObject.GetComponent<Animator>();
+                if (animator != null)
+                {
+                    Debug.Log("Prefab placed. Animator initialized.");
+                }
+                else
+                {
+                    Debug.LogWarning("Animator component not found on placed prefab.");
+                }
             }
             else
             {
@@ -77,21 +85,47 @@ public class PlaceOnPlane : MonoBehaviour
 
     public void PlayAnimation(string animName)
     {
-        if (animator != null)
-            animator.Play(animName);
+        if (animator == null)
+        {
+            Debug.LogWarning("Animator is null. Cannot play animation.");
+            return;
+        }
+
+        if (!animator.HasState(0, Animator.StringToHash(animName)))
+        {
+            Debug.LogWarning($"Animator does not contain the state: {animName}");
+            return;
+        }
+
+        Debug.Log($"Playing animation: {animName}");
+        animator.Play(animName, 0);
     }
 
     public void NextAnimation()
     {
-        if (animator == null || animationNames.Length == 0) return;
+        if (animator == null || animationNames.Length == 0)
+        {
+            Debug.LogWarning("Animator not set or animation list is empty.");
+            return;
+        }
+
         currentAnimIndex = (currentAnimIndex + 1) % animationNames.Length;
-        animator.Play(animationNames[currentAnimIndex]);
+        string animName = animationNames[currentAnimIndex];
+        Debug.Log($"Next animation: {animName}");
+        PlayAnimation(animName);
     }
 
     public void PrevAnimation()
     {
-        if (animator == null || animationNames.Length == 0) return;
+        if (animator == null || animationNames.Length == 0)
+        {
+            Debug.LogWarning("Animator not set or animation list is empty.");
+            return;
+        }
+
         currentAnimIndex = (currentAnimIndex - 1 + animationNames.Length) % animationNames.Length;
-        animator.Play(animationNames[currentAnimIndex]);
+        string animName = animationNames[currentAnimIndex];
+        Debug.Log($"Previous animation: {animName}");
+        PlayAnimation(animName);
     }
 }
